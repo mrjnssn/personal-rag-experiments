@@ -1,0 +1,17 @@
+My personal AI project
+
+I'd love to learn more about retrievel-augmented generation (RAG)
+and for this purpose I am experimenting with the OpenAI API. 
+
+Later, I want to change the OpenAI API for local open-source models
+running on a local server. 
+
+The goal is to eventually build a personal knowledge assisntant that 
+can answer questions about my own documents.
+
+First I want to understand how RAG works on a technological level 
+before I just use existing frameworks like LangChain or LlamaIndex.
+
+After this, I may even build more complex AI agents to assist with 
+task completion for personal purposes, always keeping a human in the
+loop.

@@ -9,3 +9,5 @@ response = client.responses.create(
     model="gpt-5-nano",
     input="leg in 1 zin uit wat RAG is"
 )
+
+print(response.output_text)
