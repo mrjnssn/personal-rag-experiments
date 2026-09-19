@@ -14,15 +14,32 @@ from documents import load_documents
 
 
 def create_chunks(text):
-    words = text.split()
+    paragraphs = text.split("\n\n")
+    
     chunks = []
+    current_chunk = []
 
-    step_size = CHUNK_SIZE - CHUNK_OVERLAP
+    for paragraph in paragraphs:
+        paragraph = paragraph.strip()
 
-    for start in range(0, len(words), step_size):
-        chunk_words = words[start:start + CHUNK_SIZE]
-        chunk = " ".join(chunk_words)
-        chunks.append(chunk)
+        if not paragraph:
+            continue
+
+        current_text = " ".join(current_chunk)
+        current_words = len(current_text.split())
+        paragraph_words = len(paragraph.split())
+
+        if current_words + paragraph_words <= CHUNK_SIZE:
+            current_chunk.append(paragraph)
+
+        else:
+            if current_chunk:
+                chunks.append("\n\n".join(current_chunk))
+
+            current_chunk = [paragraph]
+
+    if current_chunk:
+        chunks.append("\n\n".join(current_chunk))
 
     return chunks
 
@@ -35,11 +52,18 @@ def build_index():
     for document in documents:
         chunks = create_chunks(document["text"])
 
+        for chunk_id, chunk in enumerate(chunks):
+            print(f"\n--- {document['filename']} | chunk {chunk_id} ---")
+            print(chunk)
+
         embeddings = create_embeddings(chunks)
 
-        for chunk, embedding in zip(chunks, embeddings):
+        for chunk_id, (chunk, embedding) in enumerate(
+            zip(chunks, embeddings)
+        ):
             records.append({
                 "filename": document["filename"],
+                "chunk_id": chunk_id,
                 "text": chunk,
                 "embedding": embedding
             })

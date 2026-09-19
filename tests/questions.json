@@ -1,0 +1,26 @@
+[
+    {
+        "question": "Why do I want to learn about rag without existing frameworks?",
+        "expected_source": "notes.txt"
+    },
+    {
+        "question": "what's my ultimate goal with this RAG project?",
+        "expected_source": "notes.txt"
+    },
+    {
+        "question": "what are limitations of RAG?",
+        "expected_source": "rag.txt"
+    },
+    {
+        "question": "what is prompt stuffing?",
+        "expected_source": "rag.txt"
+    },
+    {
+        "question": "what does semantic search mean?",
+        "expected_source": "semantic_search.txt"
+    },
+    {
+        "question": "how do vector embeddings work?",
+        "expected_source": "semantic_search.txt"
+    }
+]

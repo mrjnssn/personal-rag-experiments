@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from config import EMBEDDINGS_FILE, TOP_K
+from config import EMBEDDINGS_FILE, TOP_K, SIMILARITY_THRESHOLD
 from embeddings import create_embedding
 from llm import generate
 
@@ -36,6 +36,7 @@ def retrieve(question):
 
         results.append({
             "filename": item["filename"],
+            "chunk_id": item["chunk_id"],
             "text": item["text"],
             "score": score
         })
@@ -45,10 +46,19 @@ def retrieve(question):
         reverse=True
     )
 
-    return results[:TOP_K]
+    relevant_results = [
+        result
+        for result in results
+        if result["score"] >= SIMILARITY_THRESHOLD
+    ]
+
+    return relevant_results[:TOP_K]
 
 
 def generate_answer(question, results):
+    if not results:
+        return "I have not found relevant information in the documents."
+        
     context = "\n\n".join(
         f"Source: {result['filename']}\n{result['text']}"
         for result in results
