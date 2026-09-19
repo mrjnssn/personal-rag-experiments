@@ -2,7 +2,9 @@ LLM_MODEL = "gpt-5-nano"
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 DOCUMENTS_FOLDER = "documents"
-EMBEDDINGS_FILE = "data/embeddings.json"
+
+CHROMA_PATH = "data/chroma"
+COLLECTION_NAME = "documents"
 
 CHUNK_SIZE = 100
 CHUNK_OVERLAP = 20

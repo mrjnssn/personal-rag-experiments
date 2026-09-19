@@ -1,64 +1,47 @@
-import json
-
-import numpy as np
-
-from config import EMBEDDINGS_FILE, TOP_K, SIMILARITY_THRESHOLD
+from config import TOP_K, SIMILARITY_THRESHOLD
 from embeddings import create_embedding
 from llm import generate
-
-
-def cosine_similarity(vector_a, vector_b):
-    dot_product = np.dot(vector_a, vector_b)
-
-    length_a = np.linalg.norm(vector_a)
-    length_b = np.linalg.norm(vector_b)
-
-    return dot_product / (length_a * length_b)
-
-
-def load_index():
-    with open(EMBEDDINGS_FILE, "r", encoding="utf-8") as file:
-        return json.load(file)
+from vector_store import get_collection
 
 
 def retrieve(question):
-    data = load_index()
+    collection = get_collection()
 
     question_embedding = create_embedding(question)
 
-    results = []
-
-    for item in data:
-        score = cosine_similarity(
-            question_embedding,
-            item["embedding"]
-        )
-
-        results.append({
-            "filename": item["filename"],
-            "chunk_id": item["chunk_id"],
-            "text": item["text"],
-            "score": score
-        })
-
-    results.sort(
-        key=lambda result: result["score"],
-        reverse=True
+    chroma_results = collection.query(
+        query_embeddings=[question_embedding],
+        n_results=TOP_K
     )
 
-    relevant_results = [
-        result
-        for result in results
-        if result["score"] >= SIMILARITY_THRESHOLD
-    ]
+    results = []
 
-    return relevant_results[:TOP_K]
+    documents = chroma_results["documents"][0]
+    metadatas = chroma_results["metadatas"][0]
+    distances = chroma_results["distances"][0]
+
+    for document, metadata, distance in zip(
+        documents,
+        metadatas,
+        distances
+    ):
+        similarity = 1 - distance
+
+        if similarity >= SIMILARITY_THRESHOLD:
+            results.append({
+                "filename": metadata["filename"],
+                "chunk_id": metadata["chunk_id"],
+                "text": document,
+                "score": similarity
+            })
+
+    return results
 
 
 def generate_answer(question, results):
     if not results:
         return "I have not found relevant information in the documents."
-        
+
     context = "\n\n".join(
         f"Source: {result['filename']}\n{result['text']}"
         for result in results

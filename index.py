@@ -1,16 +1,9 @@
 # preparing documents for retrieval
 
-import json
-from pathlib import Path
-
-from config import (
-    EMBEDDINGS_FILE,
-    CHUNK_SIZE,
-    CHUNK_OVERLAP
-)
-
+from config import CHUNK_SIZE
 from embeddings import create_embeddings
 from documents import load_documents
+from vector_store import get_collection
 
 
 def create_chunks(text):
@@ -46,36 +39,37 @@ def create_chunks(text):
 
 def build_index():
     documents = load_documents()
-
-    records = []
+    collection = get_collection()
 
     for document in documents:
         chunks = create_chunks(document["text"])
-
-        for chunk_id, chunk in enumerate(chunks):
-            print(f"\n--- {document['filename']} | chunk {chunk_id} ---")
-            print(chunk)
-
         embeddings = create_embeddings(chunks)
 
-        for chunk_id, (chunk, embedding) in enumerate(
-            zip(chunks, embeddings)
-        ):
-            records.append({
+        ids = []
+        metadatas = []
+
+        for chunk_id, chunk in enumerate(chunks):
+            ids.append(
+                f"{document['filename']}-{chunk_id}"
+            )
+
+            metadatas.append({
                 "filename": document["filename"],
-                "chunk_id": chunk_id,
-                "text": chunk,
-                "embedding": embedding
+                "chunk_id": chunk_id
             })
 
-    output_path = Path(EMBEDDINGS_FILE)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+        collection.add(
+            ids=ids,
+            documents=chunks,
+            embeddings=embeddings,
+            metadatas=metadatas
+        )
 
-    with open(output_path, "w", encoding="utf-8") as file:
-        json.dump(records, file)
+    print(
+        f"Index was built. "
+        f"{collection.count()} chunks in Chroma."
+    )
     
-    print(f"{len(records)} chunks have been indexed.")
-
 
 if __name__ == "__main__":
     build_index()
