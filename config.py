@@ -1,4 +1,7 @@
+LLM_PROVIDER = "openai"
 LLM_MODEL = "gpt-5-nano"
+
+EMBEDDING_PROVIDER = "openai"
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 DOCUMENTS_FOLDER = "documents"

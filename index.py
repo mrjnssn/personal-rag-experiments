@@ -1,7 +1,7 @@
 # preparing documents for retrieval
 import hashlib
 
-from config import CHUNK_SIZE
+from config import CHUNK_SIZE, EMBEDDING_PROVIDER, EMBEDDING_MODEL
 from embeddings import create_embeddings
 from documents import load_documents
 from vector_store import get_collection, get_indexed_documents
@@ -55,9 +55,17 @@ def build_index():
 
         document_hash = create_document_hash(text)
 
-        old_hash = indexed_documents.get(filename)
+        indexed_document = indexed_documents.get(filename)
 
-        if old_hash == document_hash:
+        embedding_id = (
+            f"{EMBEDDING_PROVIDER}:{EMBEDDING_MODEL}"
+        )
+
+        if not needs_reindexing(
+            indexed_document,
+            document_hash,
+            embedding_id
+        ):
             print(f"Unchanged: {filename}")
             continue
         
@@ -79,7 +87,8 @@ def build_index():
             metadatas.append({
                 "filename": filename,
                 "chunk_id": chunk_id,
-                "document_hash": document_hash
+                "document_hash": document_hash,
+                "embedding_id": embedding_id
             })
 
         collection.add(
@@ -108,6 +117,27 @@ def build_index():
         f"\nIndex was built. "
         f"{collection.count()} chunks in Chroma."
     )
+
+def needs_reindexing(
+    indexed_document,
+    document_hash,
+    embedding_id
+):
+    if not indexed_document:
+        return True
+
+    same_document = (
+        indexed_document["document_hash"] == document_hash
+    )
+
+    same_embedding = (
+        indexed_document["embedding_id"] == embedding_id
+    )
+
+    return not (
+        same_document and same_embedding
+    )
+
 
 
 if __name__ == "__main__":

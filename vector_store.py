@@ -28,8 +28,11 @@ def get_indexed_documents():
 
     for metadata in results["metadatas"]:
         filename = metadata["filename"]
-        document_hash = metadata["document_hash"]
 
-        indexed_documents[filename] = document_hash
+        indexed_documents[filename] = {
+            "document_hash": metadata.get("document_hash"),
+            "embedding_id": metadata.get("embedding_id")
+        }
+        
     
     return indexed_documents
