@@ -39,16 +39,13 @@ Core functionality should be able to run locally. Local models and open-source c
 ### Transparancy
 The system should make its processing steps understandable and inspectable. Users should be able to understand which data sources, retrieval methods, models and external services were involved in producing a result.
 
-### Modularity
-Models, storage systems, retrieval mnethods, data sources, and interfaces should be replaceable without redesigning the entire application.
-
 
 ## Architecture
 
 This personal knowledge engine is designed as a modular, local-first system. Individual components should be replaceable without requiring major changes to the rest of the application. 
 
 ### High-level architecture
-
+```
 Data sources
 |--- Personal documents
 |--- Notes
@@ -92,6 +89,7 @@ User interface
 |--- File upload
 |--- Source inspection
 |--- Data and index management
+```
 
 ### Data boundaries
 
@@ -116,8 +114,7 @@ External data may be retrieved and processed locally, but personal data should n
 
 ## Current status
 
-The project currently implements a working RAG pipeline for local text
-documents.
+The project currently implements a working RAG pipeline for local text documents.
 
 The current system can:
 
@@ -127,16 +124,14 @@ The current system can:
 - Store embeddings, text, and metadata in a persistent Chroma vector database
 - Retrieve relevant chunks using cosine vector search
 - Generate answers based on retrieved context
-- Track source filenames and chunk IDs
+- Track source filenames, chunk IDs, file content updates (hashes) and embedding model
 - Incrementally update the index when documents are added, changed, or removed
 - Avoid regenerating embeddings for unchanged documents
 - Evaluate retrieval quality using a small test set
 
 The current retrieval evaluation passes 6/6 test questions.
 
-OpenAI is currently used for both embeddings and text generation. This is a
-temporary implementation choice; the architecture is intended to support
-interchangeable local and external model providers.
+N.B. OpenAI is currently used for both embeddings and text generation. This is a temporary implementation choice; the architecture is intended to support interchangeable local and external model providers.
 
 ## Roadmap
 
