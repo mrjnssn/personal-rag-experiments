@@ -16,3 +16,20 @@ def get_collection():
             }
         }
     )
+
+def get_indexed_documents():
+    collection = get_collection()
+
+    results = collection.get(
+        include=["metadatas"]
+    )
+
+    indexed_documents = {}
+
+    for metadata in results["metadatas"]:
+        filename = metadata["filename"]
+        document_hash = metadata["document_hash"]
+
+        indexed_documents[filename] = document_hash
+    
+    return indexed_documents

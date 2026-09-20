@@ -15,3 +15,5 @@ before I just use existing frameworks like LangChain or LlamaIndex.
 After this, I may even build more complex AI agents to assist with 
 task completion for personal purposes, always keeping a human in the
 loop.
+
+Let's hope for the best!

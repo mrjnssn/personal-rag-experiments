@@ -1,10 +1,16 @@
 # preparing documents for retrieval
+import hashlib
 
 from config import CHUNK_SIZE
 from embeddings import create_embeddings
 from documents import load_documents
-from vector_store import get_collection
+from vector_store import get_collection, get_indexed_documents
 
+
+def create_document_hash(text):
+    return hashlib.sha256(
+        text.encode("utf-8")
+    ).hexdigest()
 
 def create_chunks(text):
     paragraphs = text.split("\n\n")
@@ -41,8 +47,25 @@ def build_index():
     documents = load_documents()
     collection = get_collection()
 
+    indexed_documents = get_indexed_documents()
+
     for document in documents:
-        chunks = create_chunks(document["text"])
+        filename = document["filename"]
+        text = document["text"]
+
+        document_hash = create_document_hash(text)
+
+        old_hash = indexed_documents.get(filename)
+
+        if old_hash == document_hash:
+            print(f"Unchanged: {filename}")
+            continue
+        
+        collection.delete(
+            where={"filename": filename}
+        )
+
+        chunks = create_chunks(text)
         embeddings = create_embeddings(chunks)
 
         ids = []
@@ -50,12 +73,13 @@ def build_index():
 
         for chunk_id, chunk in enumerate(chunks):
             ids.append(
-                f"{document['filename']}-{chunk_id}"
+                f"{filename}-{chunk_id}"
             )
 
             metadatas.append({
-                "filename": document["filename"],
-                "chunk_id": chunk_id
+                "filename": filename,
+                "chunk_id": chunk_id,
+                "document_hash": document_hash
             })
 
         collection.add(
@@ -65,11 +89,26 @@ def build_index():
             metadatas=metadatas
         )
 
+        print(f"Indexed: {filename}")
+
+    current_filenames = {
+        document["filename"]
+        for document in documents
+    }
+
+    for filename in indexed_documents:
+        if filename not in current_filenames:
+            collection.delete(
+                where={"filename": filename}
+            )
+
+            print(f"Removed from index: {filename}")
+
     print(
-        f"Index was built. "
+        f"\nIndex was built. "
         f"{collection.count()} chunks in Chroma."
     )
-    
+
 
 if __name__ == "__main__":
     build_index()
